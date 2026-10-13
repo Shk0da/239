@@ -99,6 +99,9 @@ public class NotifyReceiver extends BroadcastReceiver {
 
         Intent open = new Intent(ctx, MainActivity.class);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // Пуш о занятии — сразу в тренировку дня: extra читает MainActivity
+        // и после загрузки страницы зовёт __t239OpenView('train')
+        open.putExtra("view", "train");
         // FLAG_IMMUTABLE — с API 23 (см. AlarmScheduler.piFlags)
         int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= 23) piFlags |= PendingIntent.FLAG_IMMUTABLE;

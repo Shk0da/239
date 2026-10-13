@@ -50,6 +50,9 @@ public class MainActivity extends Activity {
     private WebView web;
     private ValueCallback<Uri[]> filePathCallback;
     private long lastBackAt;
+    // Вид, который нужно открыть после загрузки страницы: тап по пушу
+    // напоминания. null — обычный запуск (вкладка восстановится из localStorage).
+    private String pendingOpenView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +85,16 @@ public class MainActivity extends Activity {
                 // (клик по <a download> с blob:-URL в WebView не работает)
                 // и синхронизация темы строки состояния.
                 view.evaluateJavascript(INJECT, null);
+                // Тап по пушу напоминания несёт extra «view»: страница грузится
+                // асинхронно, холодный старт живёт в onCreate дольше загрузки —
+                // дожидаемся onPageFinished и зовём хук (INJECT уже определил
+                // его выше по порядку выполнения).
+                if (pendingOpenView != null) {
+                    String v = pendingOpenView;
+                    pendingOpenView = null;
+                    view.evaluateJavascript(
+                            "if (window.__t239OpenView) window.__t239OpenView('" + v + "');", null);
+                }
             }
         });
 
@@ -131,6 +144,12 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new Bridge(), "T239");
         setContentView(web);
         web.loadUrl(START_URL);
+
+        // Тап по пушу напоминания: активность standard-launchMode, CLEAR_TOP
+        // из PendingIntent её пересоздаёт — интент читаем в onCreate.
+        if ("train".equals(getIntent().getStringExtra("view"))) {
+            pendingOpenView = "train";
+        }
 
         // Будильник мог слететь (перезагрузка, чистка) — восстановим из снапшота
         AlarmScheduler.rescheduleFromSnapshot(this);
@@ -405,6 +424,22 @@ public class MainActivity extends Activity {
         "        .observe(goalPane, { childList: true });\n" +
         "    injectNotifyCard();\n" +
         "  }\n" +
+        "\n" +
+        "  /* Тап по пушу напоминания (extra «view» из NotifyReceiver → Java →\n" +
+        "     сюда после загрузки страницы). Вкладка тренажёра + клик по первой\n" +
+        "     карточке занятия: сайт рендерит «Сегодняшнее занятие» первым,\n" +
+        "     за неимением — «Следующее»; идём по DOM, не трогая внутренности\n" +
+        "     сайта (trainStart живёт в его IIFE). */\n" +
+        "  window.__t239OpenView = function(view){\n" +
+        "    try {\n" +
+        "      var tab = document.querySelector('[data-tab=' + view + ']');\n" +
+        "      if (tab) tab.click();\n" +
+        "      if (view === 'train') {\n" +
+        "        var btn = document.querySelector('#pane-train [data-act=open-sess]');\n" +
+        "        if (btn) btn.click();\n" +
+        "      }\n" +
+        "    } catch (e) {}\n" +
+        "  };\n" +
         "\n" +
         "  pushSnapshot();\n" +
         "})();";
