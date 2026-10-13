@@ -257,6 +257,21 @@ public class MainActivity extends Activity {
         "    };\n" +
         "  }\n" +
         "\n" +
+        "  /* Мобильная ширина: строки плана (дата + счётчик + статус + кнопка)\n" +
+        "     не влезают в экран — кнопка «тренировать» уходит за край.\n" +
+        "     Разрешаем перенос: кнопка встаёт второй строкой и прижимается\n" +
+        "     вправо (margin-left:auto; брейкпоинт 620px — как у сайта). */\n" +
+        "  if (!document.getElementById('t239-style')) {\n" +
+        "    var st = document.createElement('style');\n" +
+        "    st.id = 't239-style';\n" +
+        "    st.textContent = '@media (max-width: 620px) {' +\n" +
+        "        '.plan-row { flex-wrap: wrap; row-gap: 6px; }' +\n" +
+        "        '.plan-date { min-width: 0; }' +\n" +
+        "        '.plan-row > .btn { margin-left: auto; }' +\n" +
+        "      '}';\n" +
+        "    document.head.appendChild(st);\n" +
+        "  }\n" +
+        "\n" +
         "  function reportTheme(){\n" +
         "    var dark = document.documentElement.dataset.theme === 'dark';\n" +
         "    if (window.T239) window.T239.setStatusBarTheme(dark);\n" +
