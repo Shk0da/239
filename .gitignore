@@ -1,0 +1,18 @@
+# Android: сборочные артефакты
+android/assets/www/
+android/build/
+dist/
+tools/android-sdk/
+tools/cmdline-tools.zip
+tools/android-avd/
+
+# Подпись APK (генерится tools/build-apk.sh при первой сборке)
+*.keystore
+tools/keystore.properties
+
+# Node (jsdom-тесты)
+node_modules/
+package-lock.json
+
+# Скриншоты верификации (эмулятор)
+.DS_Store

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Математический тренажёр · Пособие Михлина</title>
+  <style>
+    /* ---------- Палитра «тёплая бумага» ---------- */
+    :root {
+      --bg: #f5f1e8;
+      --bg-soft: #efe9dc;
+      --card: #fffdf8;
+      --card-2: #faf6ec;
+      --line: #e4dccb;
+      --ink: #2b2620;
+      --muted: #83796a;
+      --accent: #52796f;
+      --accent-ink: #3e5f57;
+      --accent-soft: #e3ece8;
+      --gold: #8a6d3b;
+      --ok: #2f7d4f;
+      --ok-bg: #e9f4ec;
+      --ok-line: #cbe2d3;
+      --warn: #9a6b1f;
+      --warn-bg: #faf3e0;
+      --warn-line: #e8d9b4;
+      --err: #b0532f;
+      --err-bg: #f9ece5;
+      --err-line: #e8cfc0;
+      --hint-bg: #f8f3e4;
+      --shadow: 0 1px 2px rgba(70, 58, 34, .05), 0 10px 28px rgba(70, 58, 34, .07);
+      --serif: Georgia, "PT Serif", "Times New Roman", serif;
+      --sans: -apple-system, "Segoe UI", Roboto, "PT Sans", Arial, sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg: #211e18;
+      --bg-soft: #1b1914;
+      --card: #2a261f;
+      --card-2: #312c24;
+      --line: #3d372c;
+      --ink: #eae3d3;
+      --muted: #a79c87;
+      --accent: #8fb8a8;
+      --accent-ink: #a9cec0;
+      --accent-soft: #2e3a35;
+      --gold: #c9a76a;
+      --ok: #7cc49a;
+      --ok-bg: #26352c;
+      --ok-line: #3b5546;
+      --warn: #d3ab62;
+      --warn-bg: #353022;
+      --warn-line: #4d442e;
+      --err: #dd9877;
+      --err-bg: #3a2b22;
+      --err-line: #57402f;
+      --hint-bg: #322e21;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 10px 28px rgba(0, 0, 0, .3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 70% -10%, rgba(132, 111, 69, .06), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 0 16px 70px;
+      line-height: 1.5;
+      transition: background .3s, color .3s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    .app { max-width: 1000px; margin: 0 auto; }
+
+    /* ---------- Шапка ---------- */
+    .masthead {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+      padding: 30px 4px 18px; flex-wrap: wrap;
+    }
+    .masthead h1 {
+      font-family: var(--serif); font-weight: 600; font-size: 27px; letter-spacing: .2px;
+      color: var(--ink);
+    }
+    .masthead .sub { color: var(--muted); margin-top: 5px; max-width: 640px; font-size: 13.5px; }
+    .icon-btn {
+      border: 1px solid var(--line); background: var(--card); color: var(--muted);
+      border-radius: 10px; padding: 8px 13px; cursor: pointer; font-size: 14px;
+      transition: border-color .15s, color .15s;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+    /* ---------- Общий прогресс ---------- */
+    .progress-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; box-shadow: var(--shadow); }
+    .progress-line { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .progress-line b { color: var(--ink); }
+    .bar { height: 7px; background: var(--bg-soft); border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width .5s ease; }
+
+    /* ---------- Вкладки ---------- */
+    .tabs { display: flex; gap: 6px; margin: 22px 0 20px; flex-wrap: wrap; }
+    .tabs button {
+      font: inherit; cursor: pointer; border: 1px solid transparent; background: transparent;
+      color: var(--muted); padding: 9px 17px; border-radius: 11px; font-size: 14.5px;
+      transition: background .15s, color .15s;
+    }
+    .tabs button:hover { color: var(--ink); background: var(--bg-soft); }
+    .tabs button.active { background: var(--card); border-color: var(--line); color: var(--ink); box-shadow: var(--shadow); font-weight: 600; }
+
+    .pane[hidden] { display: none; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: var(--shadow); padding: 24px 26px;
+    }
+    .card + .card { margin-top: 16px; }
+    h2.card-t { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .card-s { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+
+    .btn {
+      font: inherit; cursor: pointer; border-radius: 11px; padding: 10px 18px; font-size: 14.5px;
+      border: 1px solid var(--line); background: var(--card); color: var(--ink);
+      transition: background .15s, border-color .15s, transform .1s;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fdfcf8; font-weight: 600; }
+    .btn.primary:hover { filter: brightness(1.06); }
+    .btn.small { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
+    .btn.quiet { border-color: transparent; background: transparent; color: var(--muted); }
+    .btn.quiet:hover { color: var(--ink); background: var(--bg-soft); }
+    .btn.danger { color: var(--err); border-color: var(--err-line); }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .grow { flex: 1; }
+
+    label.fld { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+    input[type="date"], input[type="number"], input[type="text"], textarea, select {
+      font: inherit; color: var(--ink); background: var(--card-2);
+      border: 1px solid var(--line); border-radius: 11px; padding: 10px 13px; width: 100%;
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    textarea { resize: vertical; min-height: 64px; }
+
+    /* ---------- Чипы дней недели / секций ---------- */
+    .wd-row { display: flex; gap: 7px; flex-wrap: wrap; }
+    .wd {
+      min-width: 44px; padding: 8px 10px; text-align: center; cursor: pointer; font: inherit;
+      border-radius: 10px; border: 1px solid var(--line); background: var(--card-2); color: var(--muted);
+      transition: all .15s;
+    }
+    .wd.on { background: var(--accent); border-color: var(--accent); color: #fdfcf8; font-weight: 600; }
+
+    .sec-chip {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+      padding: 3px 9px; border-radius: 99px; letter-spacing: .3px;
+      color: var(--sc); background: color-mix(in srgb, var(--sc) 13%, transparent);
+      border: 1px solid color-mix(in srgb, var(--sc) 30%, transparent);
+      white-space: nowrap;
+    }
+    .sec-0 { --sc: #5b7b9d; } .sec-1 { --sc: #8a7bb5; } .sec-2 { --sc: #b5798f; }
+    .sec-3 { --sc: #bd8f4e; } .sec-4 { --sc: #6f9a4f; } .sec-5 { --sc: #3f948d; } .sec-6 { --sc: #bd6a4a; }
+    [data-theme="dark"] .sec-0 { --sc: #93aed0; } [data-theme="dark"] .sec-1 { --sc: #b3a7dd; }
+    [data-theme="dark"] .sec-2 { --sc: #d998af; } [data-theme="dark"] .sec-3 { --sc: #dcb376; }
+    [data-theme="dark"] .sec-4 { --sc: #a3c784; } [data-theme="dark"] .sec-5 { --sc: #77c4bb; }
+    [data-theme="dark"] .sec-6 { --sc: #dc9273; }
+
+    .st { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+    .st.done  { color: var(--ok); background: var(--ok-bg); border: 1px solid var(--ok-line); }
+    .st.today { color: var(--accent-ink); background: var(--accent-soft); border: 1px solid var(--line); }
+    .st.late  { color: var(--err); background: var(--err-bg); border: 1px solid var(--err-line); }
+    .st.soon  { color: var(--muted); background: var(--bg-soft); border: 1px solid var(--line); }
+
+    /* ---------- План ---------- */
+    .plan-row {
+      display: flex; align-items: center; gap: 14px; padding: 13px 4px;
+      border-bottom: 1px dashed var(--line);
+    }
+    .plan-row:last-child { border-bottom: none; }
+    .plan-date { min-width: 132px; }
+    .plan-date b { font-size: 14.5px; }
+    .plan-date span { display: block; color: var(--muted); font-size: 12px; }
+    .mini-track { height: 5px; width: 120px; background: var(--bg-soft); border-radius: 99px; overflow: hidden; }
+    .mini-track i { display: block; height: 100%; background: var(--accent); }
+
+    /* ---------- Тренажёр ---------- */
+    .quiz-shell { max-width: 780px; margin: 0 auto; }
+    .quiz-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .quiz-top .cnt { color: var(--muted); font-size: 13.5px; }
+    .dots { display: flex; gap: 5px; flex-wrap: wrap; max-width: 100%; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 99px; background: var(--bg-soft);
+      border: 1px solid var(--line); transition: all .2s;
+    }
+    .dot.done { background: var(--ok); border-color: var(--ok); }
+    .dot.cur { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .dot.skip { background: var(--warn-bg); border-color: var(--warn-line); }
+
+    .prob-card { padding: 30px 34px 26px; }
+    .prob-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .prob-meta .pid { color: var(--muted); font-size: 12.5px; letter-spacing: .4px; }
+    .star { cursor: pointer; border: none; background: none; font-size: 17px; color: var(--muted); padding: 2px 4px; }
+    .star.on { color: var(--gold); }
+    .prob-text {
+      font-family: var(--serif); font-size: 19.5px; line-height: 1.62; color: var(--ink);
+      max-width: 46em;
+    }
+    .prob-imgs { margin-top: 20px; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .prob-imgs img {
+      max-width: min(420px, 100%); max-height: 320px; border-radius: 10px;
+      border: 1px solid var(--line); background: #fff; padding: 6px;
+    }
+    .answer-row { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .answer-row input { flex: 1; min-width: 200px; font-size: 17px; padding: 12px 16px; }
+    .answer-note { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+
+    .verdict { margin-top: 18px; padding: 14px 18px; border-radius: 12px; font-size: 15px; border: 1px solid; }
+    .verdict.ok   { background: var(--ok-bg);   border-color: var(--ok-line);   color: var(--ok); }
+    .verdict.no   { background: var(--err-bg);  border-color: var(--err-line);  color: var(--err); }
+    .verdict.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
+    .verdict .v-t { font-weight: 700; }
+    .verdict .v-s { display: block; margin-top: 3px; font-size: 13.5px; opacity: .85; }
+
+    .hints { margin-top: 14px; }
+    .hints-t { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; letter-spacing: .3px; }
+    .hint-item {
+      background: var(--hint-bg); border-left: 3px solid var(--gold);
+      border-radius: 0 10px 10px 0; padding: 10px 15px; margin-bottom: 7px;
+      font-family: var(--serif); font-size: 15.5px; line-height: 1.5;
+    }
+    .hint-item b { color: var(--gold); font-family: var(--sans); font-size: 12px; margin-right: 6px; }
+
+    .quiz-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+    .cta-box { text-align: center; padding: 44px 26px; }
+    .cta-box h2 { font-family: var(--serif); font-size: 22px; margin-bottom: 8px; }
+    .cta-box p { color: var(--muted); max-width: 480px; margin: 0 auto 20px; }
+
+    .sess-list .plan-row { cursor: default; }
+
+    /* сводка занятия */
+    .sum-grid { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 6px; }
+    .sum-cell {
+      flex: 1; min-width: 130px; background: var(--card-2); border: 1px solid var(--line);
+      border-radius: 12px; padding: 14px 16px; text-align: center;
+    }
+    .sum-cell b { display: block; font-family: var(--serif); font-size: 26px; color: var(--ink); }
+    .sum-cell span { font-size: 12px; color: var(--muted); }
+
+    /* ---------- Задачи ---------- */
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    .toolbar input[type="text"] { max-width: 260px; }
+    .toolbar select { width: auto; }
+    .sec-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sec-filter .sec-chip { cursor: pointer; border-width: 1px; opacity: .55; user-select: none; padding: 5px 11px; }
+    .sec-filter .sec-chip.on { opacity: 1; box-shadow: 0 0 0 2px color-mix(in srgb, var(--sc) 35%, transparent); }
+    .task-row {
+      display: flex; gap: 13px; align-items: flex-start; padding: 12px 6px;
+      border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px;
+      transition: background .12s;
+    }
+    .task-row:hover { background: var(--card-2); }
+    .task-row .tt { flex: 1; min-width: 0; }
+    .task-row .txt {
+      font-family: var(--serif); font-size: 15px; line-height: 1.45; color: var(--ink);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .task-row .tr-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+    .task-row img.thumb {
+      width: 54px; height: 54px; object-fit: contain; border-radius: 8px;
+      border: 1px solid var(--line); background: #fff; padding: 2px; flex: none;
+    }
+    .marks { display: flex; gap: 5px; flex: none; align-items: center; }
+    .mk { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 6px; }
+    .mk.ok   { color: var(--ok); background: var(--ok-bg); }
+    .mk.hard { color: var(--gold); background: var(--hint-bg); }
+    .mk.img  { color: var(--accent-ink); background: var(--accent-soft); }
+    .mk.auto { color: var(--muted); background: var(--bg-soft); }
+
+    .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+
+    /* ---------- Спокойный режим ---------- */
+    body[data-zen="1"] .masthead,
+    body[data-zen="1"] .progress-wrap,
+    body[data-zen="1"] .tabs { display: none; }
+    .zen-bar { display: none; }
+    body[data-zen="1"] { padding-top: 10px; }
+    body[data-zen="1"] .zen-bar { display: flex; justify-content: flex-end; margin-top: 4px; }
+
+    footer.app-f {
+      margin-top: 34px; color: var(--muted); font-size: 12.5px; line-height: 1.7;
+      border-top: 1px solid var(--line); padding-top: 16px; max-width: 760px;
+    }
+
+    @media (max-width: 620px) {
+      .prob-card { padding: 22px 18px; }
+      .prob-text { font-size: 18px; }
+      .plan-date { min-width: 104px; }
+      .toolbar input[type="text"] { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="masthead">
+      <div>
+        <h1>Математический тренажёр</h1>
+        <div class="sub">1036 задач из пособия Л. С. Михлина для поступающих в 5 класс физико-математических школ · ответ вводится с клавиатуры, ошибки мягко подсказывают</div>
+      </div>
+      <button class="icon-btn" id="theme-btn" title="Сменить оформление">☾ Вечер</button>
+    </header>
+
+    <div class="progress-wrap">
+      <div class="progress-line">
+        <span>Решено <b id="p-solved">0</b> из <b id="p-total">0</b></span>
+        <span id="p-extra"></span>
+      </div>
+      <div class="bar"><div class="bar-fill" id="p-bar"></div></div>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="train">Тренажёр</button>
+      <button data-tab="plan">План</button>
+      <button data-tab="goal">Цель</button>
+      <button data-tab="tasks">Задачи</button>
+    </nav>
+
+    <main>
+      <section class="pane" id="pane-train"></section>
+      <section class="pane" id="pane-plan" hidden></section>
+      <section class="pane" id="pane-goal" hidden></section>
+      <section class="pane" id="pane-tasks" hidden></section>
+    </main>
+
+    <footer class="app-f">
+      Автоматическая проверка работает для <b id="f-auto">…</b> задач из <b id="f-total">…</b>:
+      примеры, уравнения и сравнения вычислены напрямую, ответы остальных задач решены отдельно
+      и сверены повторным независимым проходом. Оставшиеся <b id="f-self">…</b> задач
+      (нарисуйте/докажите/приведите пример) решаются на бумаге и отмечаются самостоятельно.
+      Рисунки 52 задач извлечены из исходного PDF. Данные: <code>239.js</code> + <code>answers.js</code>;
+      прогресс хранится локально в браузере.
+    </footer>
+  </div>
+
+  <script src="239.js"></script>
+  <script src="answers.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      /* ==================== Данные ==================== */
+      var D = window.PDF239;
+      var SEC = D.sections;                    // [{id, chapter, title, page, count}]
+      var SEC_IDS = SEC.map(function (s) { return s.id; });
+      var SEC_IX = {}; SEC.forEach(function (s, i) { SEC_IX[s.id] = i; });
+      var PROB = D.problems;
+      var PROB_BY = {}; PROB.forEach(function (p) { PROB_BY[p.id] = p; });
+      var N_TOTAL = PROB.length;
+
+      /* Ответы к «нерешаемым» задачам из answers.js: получают kind="word" и сверку по ans/alt */
+      (function mergeAnswers() {
+        var ANS = window.PDF239_ANS || {};
+        PROB.forEach(function (p) {
+          if (p.kind) return;
+          var a = ANS[p.id];
+          if (!a || !a.ans) return;
+          p.kind = 'word';
+          p.ans = a.ans;
+          if (a.alt) p.alt = a.alt;
+          p.hints = ['Ответ: ' + a.ans];
+        });
+      }());
+      var N_AUTO = 0, N_SELF = 0;
+      PROB.forEach(function (p) { if (p.kind) N_AUTO++; else N_SELF++; });
+
+      /*PURE-START*/
+      /* Чистые функции: даты, нормализация ответов, планировщик. Тестируются в _test.js. */
+      var WD_NAMES = ['', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+      var WD_FULL = ['', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'];
+      var MONTHS_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+      function pad2(n) { return (n < 10 ? '0' : '') + n; }
+      function iso(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+      function todayISO() { return iso(new Date()); }
+      function fromIso(s) { var a = String(s).split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+      function addDaysIso(s, n) { var d = fromIso(s); d.setDate(d.getDate() + n); return iso(d); }
+      function weekdayIso(s) { var w = fromIso(s).getDay(); return w === 0 ? 7 : w; }
+      function daysBetween(a, b) { return Math.round((fromIso(b) - fromIso(a)) / 86400000); }
+      function fmtDate(s) {
+        var d = fromIso(s);
+        return d.getDate() + ' ' + MONTHS_RU[d.getMonth()] + ', ' + WD_NAMES[weekdayIso(s)];
+      }
+
+      /* Даты занятий: count ближайших дат от fromStr (включительно) с днём недели из weekdays */
+      function sessionDates(fromStr, count, weekdays) {
+        var set = {}; (weekdays || []).forEach(function (w) { set[w] = 1; });
+        var out = [], cur = fromStr, guard = 0;
+        while (out.length < count && guard++ < 5000) {
+          if (set[weekdayIso(cur)]) out.push(cur);
+          cur = addDaysIso(cur, 1);
+        }
+        return out;
+      }
+
+      /* Нормализация введённого ответа: регистр, ё→е, пробелы, запятая в дробях */
+      function normAnswer(u) {
+        return String(u == null ? '' : u).toLowerCase()
+          .replace(/ё/g, 'е').replace(/,/g, '.')
+          .replace(/[\s   ]/g, '')
+          .replace(/\.+$/, '');
+      }
+
+      /* Сверка ответа: точное совпадение, синонимы (cmp), цифры без оформления (eq), дробь↔десятичная */
+      function checkAnswer(p, raw) {
+        if (!p || !p.ans) return false;
+        var u = normAnswer(raw);
+        if (!u) return false;
+        var a = normAnswer(p.ans);
+        if (u === a) return true;
+        if (p.alt) {
+          for (var i = 0; i < p.alt.length; i++) if (normAnswer(p.alt[i]) === u) return true;
+        }
+        if (p.kind === 'eq') {
+          var ud = u.replace(/[^0-9]/g, '');
+          var ad = a.replace(/[^0-9]/g, '');
+          return ud.length > 0 && ud === ad;
+        }
+        var fm = a.match(/^(\d+)\/(\d+)$/);
+        if (fm) {
+          var val = +fm[1] / +fm[2];
+          var um = u.match(/^(\d+(?:\.\d+)?)$/);
+          return !!um && Math.abs(parseFloat(um[1]) - val) < 1e-9;
+        }
+        return false;
+      }
+
+      /* План занятий: незрешённые задачи, в каждом занятии — по одной из каждого раздела (round-robin) */
+      function buildPlan(S) {
+        var uns = [];
+        for (var i = 0; i < PROB.length; i++) if (!S.solved[PROB[i].id]) uns.push(PROB[i]);
+        if (!uns.length) return { plan: [], warning: '', okMsg: 'Все ' + PROB.length + ' задач решены — план не нужен. Так держать!' };
+        if (!S.weekdays || !S.weekdays.length) return { plan: [], warning: 'Выберите хотя бы один день занятий.', okMsg: '' };
+        var limit = S.limit > 0 ? S.limit : 14;
+
+        var bySec = {};
+        SEC_IDS.forEach(function (sid) { bySec[sid] = []; });
+        uns.forEach(function (p) { bySec[p.sec].push(p.id); });
+
+        var order = [], more = true;
+        while (more) {
+          more = false;
+          SEC_IDS.forEach(function (sid) {
+            if (bySec[sid].length) { order.push(bySec[sid].shift()); more = true; }
+          });
+        }
+
+        var dates = sessionDates(todayISO(), Math.ceil(order.length / limit), S.weekdays);
+        var plan = [];
+        for (var k = 0; k < order.length; k += limit)
+          plan.push({ d: dates[plan.length] || addDaysIso(todayISO(), plan.length), ids: order.slice(k, k + limit) });
+
+        var res = { plan: plan, warning: '', okMsg: '' };
+        if (S.deadline) {
+          var last = plan[plan.length - 1].d;
+          if (daysBetween(todayISO(), S.deadline) < daysBetween(todayISO(), last)) {
+            res.warning = 'При текущем темпе успеть к ' + S.deadline + ' не получится: план заканчивается ' +
+              fmtDate(last) + '. Добавьте дни занятий или увеличьте лимит задач.';
+          }
+        }
+        res.okMsg = 'План готов: ' + plan.length + ' занятий по ' + limit +
+          ' задач. В каждое занятие входят задачи из всех разделов пособия.';
+        return res;
+      }
+      /*PURE-END*/
+
+      /* ==================== Состояние ==================== */
+      var LS_KEY = 'p239_state_v2';
+      var LS_OLD = 'p239_state_v1';
+
+      function defState() {
+        return {
+          goal: '', deadline: '', weekdays: [1, 2, 3, 4, 5], limit: 14,
+          plan: [], generatedAt: '',
+          solved: {}, solvedBy: {}, firstTry: {}, wrong: {}, hintSeen: {}, mine: {}, hard: {},
+          theme: 'light', tab: 'train'
+        };
+      }
+      function load() {
+        var s = defState(), raw = null;
+        try { raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { raw = null; }
+        if (!raw) {
+          try { raw = JSON.parse(localStorage.getItem(LS_OLD) || 'null'); } catch (e) { raw = null; }
+          if (raw && raw.plan && raw.plan.length && !raw.plan[0].d)
+            raw.plan = raw.plan.map(function (x) { return { d: x.date, ids: x.ids || [] }; });
+        }
+        if (raw) ['goal', 'deadline', 'generatedAt', 'theme', 'tab'].forEach(function (k) { if (raw[k]) s[k] = raw[k]; });
+        if (raw) ['solved', 'solvedBy', 'firstTry', 'wrong', 'hintSeen', 'mine', 'hard'].forEach(function (k) {
+          if (raw[k] && typeof raw[k] === 'object') s[k] = raw[k];
+        });
+        if (raw) {
+          if (Array.isArray(raw.weekdays) && raw.weekdays.length) s.weekdays = raw.weekdays.filter(function (w) { return w >= 1 && w <= 7; });
+          if (+raw.limit > 0) s.limit = Math.min(200, Math.round(+raw.limit));
+          if (Array.isArray(raw.plan)) s.plan = raw.plan.filter(function (x) { return x && x.d && Array.isArray(x.ids); });
+        }
+        return s;
+      }
+      function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* переполнение маловероятно */ } }
+
+      var S = load();
+      var TRAIN = { sess: null, skip: {}, log: [], single: null, input: '', verdict: '', flash: '' };
+      var TASKS = { q: '', sec: 'all', st: 'all', shown: 60 };
+
+      /* ==================== UI-утилиты ==================== */
+      function $(id) { return document.getElementById(id); }
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function secChip(secId) {
+        var ix = SEC_IX[secId] || 0;
+        return '<span class="sec-chip sec-' + ix + '">' + esc(secId) + ' · ' + esc(shortSec(secId)) + '</span>';
+      }
+      function shortSec(secId) {
+        var t = (SEC_IX[secId] != null ? SEC[SEC_IX[secId]].title : '');
+        return t.length > 30 ? t.slice(0, 29) + '…' : t;
+      }
+      function secFull(secId) {
+        return SEC_IX[secId] != null ? SEC[SEC_IX[secId]].title : secId;
+      }
+      function autoCount(p) { return p.kind ? 1 : 0; }
+      function hintsOpen(p) { return Math.min(S.hintSeen[p.id] || 0, (p.hints || []).length); }
+
+      /* ==================== Шапка и вкладки ==================== */
+      function renderHeader() {
+        var done = Object.keys(S.solved).length;
+        var first = Object.keys(S.firstTry).length;
+        $('p-solved').textContent = done;
+        $('p-total').textContent = N_TOTAL;
+        $('p-bar').style.width = Math.round(done / N_TOTAL * 1000) / 10 + '%';
+        var ex = [];
+        if (first) ex.push('с первой попытки: ' + first);
+        var left = N_TOTAL - done;
+        if (left > 0) ex.push('осталось: ' + left);
+        if (S.deadline) {
+          var dl = daysBetween(todayISO(), S.deadline);
+          ex.push(dl >= 0 ? 'до цели: ' + (dl + 1) + ' дн.' : 'цель была ' + fmtDate(S.deadline));
+        }
+        $('p-extra').textContent = ex.join(' · ');
+      }
+
+      var RENDER = {};
+      function showTab(name) {
+        S.tab = name; save();
+        ['train', 'plan', 'goal', 'tasks'].forEach(function (t) {
+          $('pane-' + t).hidden = t !== name;
+        });
+        var btns = $('tabs').querySelectorAll('button');
+        for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].dataset.tab === name);
+        RENDER[name]();
+      }
+
+      /* ==================== Цель ==================== */
+      function renderGoal() {
+        var done = Object.keys(S.solved).length;
+        var first = Object.keys(S.firstTry).length;
+        var hard = Object.keys(S.hard).length;
+        var el = $('pane-goal');
+
+        var wdBtns = '';
+        for (var w = 1; w <= 7; w++)
+          wdBtns += '<button class="wd' + (S.weekdays.indexOf(w) >= 0 ? ' on' : '') + '" data-act="wd" data-wd="' + w + '">' + WD_NAMES[w].toUpperCase() + '</button>';
+
+        var lastD = S.plan.length ? S.plan[S.plan.length - 1].d : '';
+        el.innerHTML =
+          '<div class="card">' +
+            '<h2 class="card-t">Цель занятий</h2>' +
+            '<div class="card-s">Поставьте дедлайн и темп — тренажёр сам распределит все задачи по дням, чередуя разделы.</div>' +
+            '<label class="fld">Зачем это нужно — короткая мотивация (необязательно)</label>' +
+            '<input type="text" data-field="goal" maxlength="120" placeholder="например: олимпиада в марте, хотим в физматшколу" value="' + esc(S.goal) + '">' +
+            '<label class="fld">К какому числу всё прорешать</label>' +
+            '<input type="date" data-field="deadline" value="' + esc(S.deadline) + '">' +
+            '<label class="fld">Дни занятий</label>' +
+            '<div class="wd-row">' + wdBtns + '</div>' +
+            '<label class="fld">Задач за одно занятие</label>' +
+            '<input type="number" data-field="limit" min="1" max="200" value="' + (+S.limit || 14) + '">' +
+            '<div class="row" style="margin-top:20px">' +
+              '<button class="btn primary" data-act="make-plan">Составить план</button>' +
+              (S.plan.length ? '<span style="color:var(--muted);font-size:13px">План уже есть (' + S.plan.length + ' занятий). Пересчёт заново распределит нерешённые задачи.</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="card">' +
+            '<h2 class="card-t">Прогресс</h2>' +
+            '<div class="sum-grid">' +
+              sumCell(done + ' / ' + N_TOTAL, 'задач решено') +
+              sumCell(Math.round(done / N_TOTAL * 100) + '%', 'пособия пройдено') +
+              sumCell(String(first), 'с первой попытки') +
+              sumCell(String(hard), 'в сложных') +
+              (lastD ? sumCell(fmtDate(lastD), 'прогноз окончания') : '') +
+            '</div>' +
+            '<div class="row" style="margin-top:16px">' +
+              '<button class="btn small" data-act="export">Экспорт прогресса</button>' +
+              '<button class="btn small" data-act="import">Импорт</button>' +
+              '<input type="file" id="imp-file" accept="application/json" hidden>' +
+              '<button class="btn small danger" data-act="reset">Сбросить всё</button>' +
+            '</div>' +
+          '</div>';
+      }
+      function sumCell(b, s) { return '<div class="sum-cell"><b>' + b + '</b><span>' + s + '</span></div>'; }
+
+      function actMakePlan() {
+        if (!S.deadline && !confirm('Дедлайн не указан — составить план без него (по дням занятий, пока не кончатся задачи)?')) return;
+        var res = buildPlan(S);
+        if (res.warning && !res.plan.length) { alert(res.warning); return; }
+        S.plan = res.plan; S.generatedAt = todayISO();
+        TRAIN.sess = null; TRAIN.single = null;
+        save();
+        if (res.warning) alert(res.warning);
+        showTab('plan');
+      }
+
+      /* ==================== План ==================== */
+      function sessDone(ses) {
+        var n = 0; ses.ids.forEach(function (id) { if (S.solved[id]) n++; });
+        return n;
+      }
+      function sessStatus(ses) {
+        var t = todayISO();
+        if (sessDone(ses) >= ses.ids.length) return 'done';
+        if (ses.d < t) return 'late';
+        if (ses.d === t) return 'today';
+        return 'soon';
+      }
+      var ST_RU = { done: 'готово', today: 'сегодня', late: 'просрочено', soon: 'впереди' };
+
+      function renderPlan() {
+        var el = $('pane-plan');
+        if (!S.plan.length) {
+          el.innerHTML = '<div class="card cta-box"><h2>План пока не составлен</h2>' +
+            '<p>Укажите дедлайн, дни недели и размер занятия — тренажёр разобьёт все задачи на занятия, в каждом будут задачи из всех разделов.</p>' +
+            '<button class="btn primary" data-act="goto-goal">Поставить цель</button></div>';
+          return;
+        }
+        var rows = '';
+        S.plan.forEach(function (ses, i) {
+          var st = sessStatus(ses);
+          var dn = sessDone(ses);
+          rows += '<div class="plan-row">' +
+            '<div class="plan-date"><b>' + fmtDate(ses.d) + '</b><span>' + WD_FULL[weekdayIso(ses.d)] + '</span></div>' +
+            '<div class="mini-track"><i style="width:' + Math.round(dn / ses.ids.length * 100) + '%"></i></div>' +
+            '<span style="color:var(--muted);font-size:13px">' + dn + ' / ' + ses.ids.length + '</span>' +
+            '<span class="st ' + st + '">' + ST_RU[st] + '</span>' +
+            '<span class="grow"></span>' +
+            (st === 'done' ? '<button class="btn small quiet" data-act="open-sess" data-i="' + i + '">повторить</button>'
+                           : '<button class="btn small primary" data-act="open-sess" data-i="' + i + '">тренировать</button>') +
+            '</div>';
+        });
+        el.innerHTML = '<div class="card">' +
+          '<h2 class="card-t">План занятий</h2>' +
+          '<div class="card-s">Составлен ' + (S.generatedAt ? fmtDate(S.generatedAt) : '—') + '. Решённые задачи при пересчёте исключаются, пропущенные остаются.</div>' +
+          rows + '</div>';
+      }
+
+      /* ==================== Тренажёр ==================== */
+      function curProb() {
+        if (TRAIN.single) return PROB_BY[TRAIN.single] || null;
+        if (!TRAIN.sess) return null;
+        var i = trainIdx();
+        return i >= 0 ? PROB_BY[TRAIN.sess.ids[i]] : null;
+      }
+      function trainIdx() {
+        if (TRAIN.single) return S.solved[TRAIN.single] ? -1 : 0;
+        if (!TRAIN.sess) return -1;
+        var ids = TRAIN.sess.ids;
+        for (var i = 0; i < ids.length; i++) if (!S.solved[ids[i]] && !TRAIN.skip[ids[i]]) return i;
+        return -1;
+      }
+      function trainStart(ses) {
+        TRAIN.sess = ses; TRAIN.skip = {}; TRAIN.log = []; TRAIN.single = null;
+        TRAIN.input = ''; TRAIN.verdict = ''; TRAIN.flash = '';
+        showTab('train');
+      }
+      function todaySess() {
+        var t = todayISO();
+        for (var i = 0; i < S.plan.length; i++) if (S.plan[i].d === t) return { ses: S.plan[i], i: i };
+        return null;
+      }
+      function firstOpenSess() {
+        for (var i = 0; i < S.plan.length; i++) if (sessStatus(S.plan[i]) !== 'done') return { ses: S.plan[i], i: i };
+        return null;
+      }
+
+      var PRAISE = ['Верно!', 'Отлично!', 'Так держать!', 'Точно!', 'Молодец!', 'Именно!'];
+      var NUDGE = ['Пока не совсем — попробуйте ещё раз.', 'Почти! Обратите внимание на подсказку.', 'Не сходится — подумайте, где могла закрасться ошибка.'];
+
+      function renderTrain() {
+        var el = $('pane-train');
+
+        if (TRAIN.single) { el.innerHTML = singleHTML(); focusAnswer(); return; }
+        if (TRAIN.sess) {
+          var i = trainIdx();
+          if (i < 0) { el.innerHTML = summaryHTML(); return; }
+          el.innerHTML = quizHTML(i);
+          focusAnswer();
+          return;
+        }
+        el.innerHTML = pickerHTML();
+      }
+
+      function pickerHTML() {
+        var zen = document.body.dataset.zen === '1'
+          ? '<div class="zen-bar"><button class="btn small quiet" data-act="zen-off">← обычный режим</button></div>'
+          : '';
+        if (!S.plan.length) {
+          return '<div class="card cta-box"><h2>Начнём подготовку</h2>' +
+            '<p>Поставьте цель и составьте план — тренажёр будет предлагать занятия: по несколько задач из каждого раздела, с проверкой ответа и подсказками.</p>' +
+            '<button class="btn primary" data-act="goto-goal">Поставить цель</button></div>';
+        }
+        var t = todaySess(), fo = firstOpenSess();
+        var head = '';
+        if (t && sessStatus(t.ses) !== 'done') {
+          var left = t.ses.ids.length - sessDone(t.ses);
+          head = '<div class="card" style="text-align:center;padding:34px 24px">' +
+            '<h2 class="card-t" style="margin-bottom:4px">Сегодняшнее занятие</h2>' +
+            '<div class="card-s" style="justify-content:center">' + fmtDate(t.ses.d) + ' · осталось задач: ' + left + '</div>' +
+            '<button class="btn primary" data-act="open-sess" data-i="' + t.i + '">Продолжить занятие</button></div>';
+        } else if (fo) {
+          head = '<div class="card cta-box"><h2>' + (fo.ses.d < todayISO() ? 'Есть просроченное занятие' : 'Следующее занятие') + '</h2>' +
+            '<p>' + fmtDate(fo.ses.d) + ' · задач: ' + (fo.ses.ids.length - sessDone(fo.ses)) + '</p>' +
+            '<button class="btn primary" data-act="open-sess" data-i="' + fo.i + '">Начать</button></div>';
+        }
+        var rows = '';
+        S.plan.forEach(function (ses, i) {
+          if (sessStatus(ses) === 'done' || (t && i === t.i)) return;
+          var st = sessStatus(ses);
+          rows += '<div class="plan-row">' +
+            '<div class="plan-date"><b>' + fmtDate(ses.d) + '</b><span>' + WD_FULL[weekdayIso(ses.d)] + '</span></div>' +
+            '<span style="color:var(--muted);font-size:13px">' + (ses.ids.length - sessDone(ses)) + ' задач</span>' +
+            '<span class="st ' + st + '">' + ST_RU[st] + '</span>' +
+            '<span class="grow"></span>' +
+            '<button class="btn small" data-act="open-sess" data-i="' + i + '">заниматься</button></div>';
+        });
+        if (!rows && !head) {
+          return '<div class="card cta-box"><h2>План выполнен полностью</h2>' +
+            '<p>Все задачи по плану решены. Составьте новый — оставшиеся задачи снова распределятся по дням.</p>' +
+            '<button class="btn primary" data-act="goto-goal">Составить новый план</button></div>';
+        }
+        return '<div class="quiz-shell">' + head +
+          (rows ? '<div class="card sess-list"><h2 class="card-t">Ближайшие занятия</h2>' + rows + '</div>' : '') + '</div>';
+      }
+
+      function dotsHTML(ids, cur) {
+        var out = '';
+        ids.forEach(function (id, i) {
+          var cls = 'dot';
+          if (S.solved[id]) cls += ' done';
+          else if (TRAIN.skip[id]) cls += ' skip';
+          if (i === cur) cls += ' cur';
+          out += '<span class="' + cls + '" title="Задача ' + id + '"></span>';
+        });
+        return '<div class="dots">' + out + '</div>';
+      }
+
+      function imgsHTML(p, cls) {
+        if (!p.imgs || !p.imgs.length) return '';
+        return '<div class="' + cls + '">' + p.imgs.map(function (src) {
+          return '<img src="' + esc(src) + '" alt="Рисунок к задаче ' + esc(p.id) + '" loading="lazy" draggable="false">';
+        }).join('') + '</div>';
+      }
+
+      function quizHTML(i) {
+        var ids = TRAIN.sess.ids, p = PROB_BY[ids[i]];
+        var h = '<div class="quiz-shell">';
+
+        h += '<div class="quiz-top"><span class="cnt">Задача ' + (i + 1) + ' из ' + ids.length +
+          ' · ' + esc(secFull(p.sec)) + '</span>' + dotsHTML(ids, i) +
+          '<button class="btn small quiet" data-act="zen" title="Убрать всё лишнее">' +
+          (document.body.dataset.zen === '1' ? 'обычный режим' : 'спокойный режим') + '</button>' +
+          '<button class="btn small quiet" data-act="exit-sess">выйти</button></div>';
+
+        h += '<div class="card prob-card">' + problemBody(p, true) + '</div></div>';
+        return h;
+      }
+
+      function problemBody(p, inQuiz) {
+        var h = '<div class="prob-meta">' + secChip(p.sec) +
+          '<span class="pid">' + esc(p.id) + '</span>' +
+          (p.kind ? '' : '<span class="mk auto" title="Автопроверки нет — решите на бумаге и сверьтесь">самопроверка</span>') +
+          '<span class="grow"></span>' +
+          '<button class="star' + (S.hard[p.id] ? ' on' : '') + '" data-act="star" data-pid="' + esc(p.id) + '" title="В сложные">★</button>' +
+          '</div>';
+
+        h += '<div class="prob-text">' + esc(p.text) + '</div>';
+        h += imgsHTML(p, 'prob-imgs');
+
+        if (p.kind) {
+          var attempted = S.wrong[p.id] || 0;
+          h += '<form id="quiz-form" autocomplete="off">' +
+            '<div class="answer-row">' +
+            '<input type="text" id="ans-in" data-field="answer" placeholder="Ответ…"' +
+            (TRAIN.verdict === 'ok' ? ' disabled' : '') +
+            ' autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">' +
+            (TRAIN.verdict === 'ok'
+              ? '<button type="button" class="btn primary" id="next-btn" data-act="next" autofocus>Дальше →</button>'
+              : '<button type="submit" class="btn primary">Проверить</button>') +
+            '</div>' +
+            '<div class="answer-note">' +
+            (p.kind === 'eq' ? 'Уравнение: введите корень, например «12» или «x = 12»' : '') +
+            (p.kind === 'cmp' ? 'Введите номер или слово: 1, первый…' : '') +
+            (p.kind === 'expr' && /^\d+\/\d+$/.test(p.ans || '') ? 'Дробь вводите как 1/2 или десятичной: 0,5' : '') +
+            (p.kind === 'expr' && !/^\d+\/\d+$/.test(p.ans || '') ? 'Введите число; разряды можно разделять пробелами' : '') +
+            (p.kind === 'numword' ? 'Введите число цифрами' : '') +
+            (p.kind === 'word' ? 'Введите ответ — число или слово; единицы измерения можно опустить' : '') +
+            (attempted ? ' · попыток: ' + attempted : '') +
+            '</div></form>';
+        } else {
+          h += '<div class="answer-note" style="margin-top:22px">Автопроверки для этой задачи нет. Решите на бумаге, кратко запишите ответ ниже и сверьтесь с пособием.</div>' +
+            '<div class="answer-row" style="margin-top:10px">' +
+            '<input type="text" data-field="note" data-pid="' + esc(p.id) + '" placeholder="Ваш ответ или ход решения (сохранится)" value="' + esc(S.mine[p.id] || '') + '"></div>' +
+            '<div class="quiz-actions">' +
+            '<button class="btn primary" data-act="self-done" data-pid="' + esc(p.id) + '">✓ Я решил эту задачу</button>' +
+            '<button class="btn" data-act="skip">Позже</button>' +
+            '</div>';
+        }
+
+        /* вердикт */
+        if (TRAIN.verdict === 'ok') {
+          h += '<div class="verdict ok"><span class="v-t">' + PRAISE[Math.floor(Math.random() * PRAISE.length)] + '</span>' +
+            (TRAIN.okFirst ? '<span class="v-s">Решено с первой попытки.</span>' : '<span class="v-s">Решено — с пути сбились, но вернулись.</span>') + '</div>';
+        } else if (TRAIN.verdict === 'no') {
+          h += '<div class="verdict no"><span class="v-t">' + NUDGE[Math.floor(Math.random() * NUDGE.length)] + '</span></div>';
+        } else if (TRAIN.flash) {
+          h += '<div class="verdict warn"><span class="v-t">' + esc(TRAIN.flash) + '</span></div>';
+        }
+
+        /* подсказки */
+        var hs = p.hints || [], open = hintsOpen(p);
+        if (open > 0) {
+          h += '<div class="hints"><div class="hints-t">ПОДСКАЗКИ</div>';
+          for (var k = 0; k < open; k++)
+            h += '<div class="hint-item"><b>' + (k + 1) + '</b>' + esc(hs[k]) + '</div>';
+          h += '</div>';
+        }
+
+        /* общие действия */
+        h += '<div class="quiz-actions">' +
+          (p.kind && TRAIN.verdict !== 'ok'
+            ? (hs.length === 1
+                ? '<button class="btn small" data-act="hint"' + (open >= 1 ? ' disabled' : '') + '>Показать ответ</button>'
+                : '<button class="btn small" data-act="hint"' + (open >= hs.length ? ' disabled' : '') + '>Подсказка' +
+                  (hs.length ? ' ' + open + '/' + hs.length : '') + '</button>') +
+              '<button class="btn small quiet" data-act="skip">Пропустить</button>'
+            : '') +
+          (S.solved[p.id] ? '<button class="btn small quiet" data-act="unsolve" data-pid="' + esc(p.id) + '">снять отметку «решено»</button>' : '') +
+          '</div>';
+        return h;
+      }
+
+      function singleHTML() {
+        var p = PROB_BY[TRAIN.single];
+        if (!p) { TRAIN.single = null; return pickerHTML(); }
+        var h = '<div class="quiz-shell">' +
+          '<div class="quiz-top"><button class="btn small quiet" data-act="back-tasks">← к списку задач</button></div>' +
+          '<div class="card prob-card">' + problemBody(p, true);
+        return h + '</div></div>';
+      }
+
+      function summaryHTML() {
+        var ids = TRAIN.sess.ids;
+        var first = 0, hinted = 0, self = 0, skipped = 0;
+        TRAIN.log.forEach(function (r) {
+          if (r.self) self++;
+          else if (r.hints > 0) hinted++;
+          else first++;
+        });
+        Object.keys(TRAIN.skip).forEach(function (k) { if (!S.solved[k]) skipped++; });
+        var repeatable = sessDone(TRAIN.sess) < ids.length;
+        return '<div class="quiz-shell"><div class="card cta-box">' +
+          '<h2>Занятие завершено</h2>' +
+          '<p>' + fmtDate(TRAIN.sess.d) + ' · ' + ids.length + ' задач в занятии</p>' +
+          '<div class="sum-grid" style="text-align:left">' +
+            sumCell(String(first), 'с первой попытки') +
+            sumCell(String(hinted), 'после подсказки') +
+            sumCell(String(self), 'самопроверка') +
+            (skipped ? sumCell(String(skipped), 'пропущено') : '') +
+          '</div>' +
+          '<div class="row" style="justify-content:center;margin-top:14px">' +
+            (repeatable ? '<button class="btn primary" data-act="repeat">Повторить оставшиеся</button>' : '') +
+            '<button class="btn" data-act="goto-plan">К плану</button>' +
+          '</div></div></div>';
+      }
+
+      function focusAnswer() {
+        var inp = $('ans-in');
+        if (!inp) return;
+        if (TRAIN.verdict === 'no') { inp.value = TRAIN.input || ''; inp.focus(); inp.select(); }
+        else if (TRAIN.verdict === 'ok') { var nb = $('next-btn'); if (nb) nb.focus(); }
+        else { inp.value = TRAIN.input || ''; inp.focus(); }
+      }
+
+      /* ---- действия тренажёра ---- */
+      function actCheck() {
+        var p = curProb(); if (!p || !p.kind) return;
+        var v = TRAIN.input;
+        if (!normAnswer(v)) { TRAIN.flash = 'Сначала введите ответ.'; TRAIN.verdict = ''; renderTrain(); return; }
+        TRAIN.flash = '';
+        if (checkAnswer(p, v)) {
+          var clean = !(S.wrong[p.id] || 0) && !(S.hintSeen[p.id] || 0);
+          S.solved[p.id] = 1;
+          S.solvedBy[p.id] = 'auto';
+          if (clean) S.firstTry[p.id] = 1;
+          TRAIN.log.push({ id: p.id, first: clean, hints: S.hintSeen[p.id] || 0, self: false });
+          TRAIN.okFirst = clean;
+          TRAIN.verdict = 'ok'; TRAIN.input = '';
+          save(); renderTrain(); renderHeader();
+        } else {
+          S.wrong[p.id] = (S.wrong[p.id] || 0) + 1;
+          var hs = p.hints || [], seen = S.hintSeen[p.id] || 0;
+          if (seen < hs.length) S.hintSeen[p.id] = seen + 1;
+          TRAIN.verdict = 'no';
+          save(); renderTrain();
+        }
+      }
+      function actHint() {
+        var p = curProb(); if (!p || !p.hints) return;
+        var seen = S.hintSeen[p.id] || 0;
+        if (seen < p.hints.length) { S.hintSeen[p.id] = seen + 1; save(); }
+        TRAIN.flash = '';
+        renderTrain();
+      }
+      function actSkip() {
+        var p = curProb(); if (!p) return;
+        if (TRAIN.single) { TRAIN.single = null; showTab('tasks'); return; }
+        TRAIN.skip[p.id] = 1;
+        TRAIN.input = ''; TRAIN.verdict = ''; TRAIN.flash = '';
+        renderTrain();
+      }
+      function actNext() {
+        TRAIN.verdict = ''; TRAIN.input = ''; TRAIN.flash = '';
+        if (TRAIN.single) { TRAIN.single = null; showTab('tasks'); return; }
+        renderTrain();
+      }
+      function actSelfDone(pid) {
+        S.solved[pid] = 1; S.solvedBy[pid] = 'self';
+        TRAIN.log.push({ id: pid, first: false, hints: 0, self: true });
+        save(); renderHeader();
+        if (TRAIN.single) { TRAIN.single = null; showTab('tasks'); }
+        else actNext();
+      }
+      function actStar(pid) {
+        if (S.hard[pid]) delete S.hard[pid]; else S.hard[pid] = 1;
+        save(); renderTrain();
+      }
+      function actUnsolve(pid) {
+        ['solved', 'solvedBy', 'firstTry', 'wrong', 'hintSeen'].forEach(function (k) { delete S[k][pid]; });
+        save(); renderHeader(); renderTrain();
+      }
+
+      /* ==================== Задачи ==================== */
+      function renderTasks() {
+        var el = $('pane-tasks');
+        var list = PROB.filter(function (p) {
+          if (TASKS.sec !== 'all' && p.sec !== TASKS.sec) return false;
+          if (TASKS.st === 'unsolved' && S.solved[p.id]) return false;
+          if (TASKS.st === 'solved' && !S.solved[p.id]) return false;
+          if (TASKS.st === 'hard' && !S.hard[p.id]) return false;
+          if (TASKS.st === 'img' && !(p.imgs && p.imgs.length)) return false;
+          if (TASKS.st === 'auto' && !p.kind) return false;
+          if (TASKS.q && (p.id + ' ' + p.text).toLowerCase().indexOf(TASKS.q) < 0) return false;
+          return true;
+        });
+
+        var chips = '<span class="sec-chip' + (TASKS.sec === 'all' ? ' on" style="--sc:var(--muted)' : '') + '" data-act="fsec" data-sec="all">все</span>';
+        SEC.forEach(function (s, i) {
+          chips += '<span class="sec-chip sec-' + i + (TASKS.sec === s.id ? ' on' : '') + '" data-act="fsec" data-sec="' + esc(s.id) + '">' + esc(s.id) + '</span>';
+        });
+
+        var opts = [['all', 'все'], ['unsolved', 'нерешённые'], ['solved', 'решённые'], ['hard', 'сложные'], ['img', 'с рисунком'], ['auto', 'автопроверка']];
+        var sel = '<select data-act="fst">';
+        opts.forEach(function (o) { sel += '<option value="' + o[0] + '"' + (TASKS.st === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; });
+        sel += '</select>';
+
+        var shown = list.slice(0, TASKS.shown);
+        var rows = shown.map(function (p) {
+          var marks = '';
+          if (S.solved[p.id]) marks += '<span class="mk ok" title="Решено">✓</span>';
+          if (S.hard[p.id]) marks += '<span class="mk hard" title="В сложных">★</span>';
+          if (p.imgs && p.imgs.length) marks += '<span class="mk img" title="Есть рисунок">рис.</span>';
+          return '<div class="task-row" data-act="open-task" data-pid="' + esc(p.id) + '">' +
+            (p.imgs && p.imgs.length ? '<img class="thumb" src="' + esc(p.imgs[0]) + '" alt="" loading="lazy">' : '') +
+            '<div class="tt"><div class="tr-meta">' + secChip(p.sec) + '<span class="pid" style="color:var(--muted);font-size:12px">' + esc(p.id) + '</span></div>' +
+            '<div class="txt">' + esc(p.text) + '</div></div>' +
+            '<div class="marks">' + marks + '</div></div>';
+        }).join('');
+
+        el.innerHTML = '<div class="card">' +
+          '<div class="toolbar">' +
+          '<input type="text" data-field="search" placeholder="Поиск по тексту или номеру…" value="' + esc(TASKS.q) + '">' +
+          sel + '</div>' +
+          '<div class="sec-filter" style="margin-bottom:10px">' + chips + '</div>' +
+          (rows ? rows : '<div class="empty">Ничего не найдено.</div>') +
+          (list.length > TASKS.shown
+            ? '<div style="text-align:center;margin-top:14px"><button class="btn small" data-act="more">Показать ещё (' + (list.length - TASKS.shown) + ')</button></div>'
+            : '') +
+          '<div class="card-s" style="margin:12px 0 0">найдено: ' + list.length + ' из ' + N_TOTAL + '</div>' +
+          '</div>';
+
+        var si = el.querySelector('[data-field="search"]');
+        if (si) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
+      }
+
+      /* ==================== Экспорт / импорт / сброс ==================== */
+      function actExport() {
+        var blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'p239-progress-' + todayISO() + '.json';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+      function actImport(file) {
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            var raw = JSON.parse(r.result);
+            if (!raw || typeof raw !== 'object' || !raw.solved) throw new Error('bad');
+            localStorage.setItem(LS_KEY, JSON.stringify(raw));
+            location.reload();
+          } catch (e) { alert('Не удалось прочитать файл: ожидается JSON экспорта прогресса.'); }
+        };
+        r.readAsText(file);
+      }
+      function actReset() {
+        if (!confirm('Удалить весь прогресс, цель и план? Действие необратимо.')) return;
+        localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_OLD);
+        location.reload();
+      }
+
+      /* ==================== События ==================== */
+      document.addEventListener('click', function (e) {
+        var tab = e.target.closest('[data-tab]');
+        if (tab) { showTab(tab.dataset.tab); return; }
+        var t = e.target.closest('[data-act]');
+        if (!t) return;
+        var act = t.dataset.act, pid = t.dataset.pid;
+        switch (act) {
+          case 'wd': {
+            var w = +t.dataset.wd, ix = S.weekdays.indexOf(w);
+            if (ix >= 0) { if (S.weekdays.length > 1) S.weekdays.splice(ix, 1); }
+            else S.weekdays.push(w);
+            S.weekdays.sort(); save(); renderGoal(); break;
+          }
+          case 'make-plan': actMakePlan(); break;
+          case 'goto-goal': showTab('goal'); break;
+          case 'goto-plan': TRAIN.sess = null; showTab('plan'); break;
+          case 'open-sess': {
+            var ses = S.plan[+t.dataset.i];
+            if (ses) trainStart(ses);
+            break;
+          }
+          case 'exit-sess': TRAIN.sess = null; renderTrain(); showTab('plan'); break;
+          case 'repeat': trainStart(TRAIN.sess); break;
+          case 'check': actCheck(); break;
+          case 'hint': actHint(); break;
+          case 'skip': actSkip(); break;
+          case 'next': actNext(); break;
+          case 'self-done': actSelfDone(pid); break;
+          case 'star': actStar(pid); break;
+          case 'unsolve': actUnsolve(pid); break;
+          case 'zen':
+            if (document.body.dataset.zen === '1') delete document.body.dataset.zen;
+            else document.body.dataset.zen = '1';
+            renderTrain(); break;
+          case 'zen-off': delete document.body.dataset.zen; renderTrain(); break;
+          case 'back-tasks': TRAIN.single = null; showTab('tasks'); break;
+          case 'open-task':
+            TRAIN.single = t.dataset.pid; TRAIN.input = ''; TRAIN.verdict = ''; TRAIN.flash = '';
+            showTab('train'); break;
+          case 'fsec': TASKS.sec = t.dataset.sec; TASKS.shown = 60; renderTasks(); break;
+          case 'more': TASKS.shown += 60; renderTasks(); break;
+          case 'export': actExport(); break;
+          case 'import': $('imp-file').click(); break;
+          case 'reset': actReset(); break;
+        }
+      });
+
+      document.addEventListener('change', function (e) {
+        var t = e.target;
+        if (t.dataset.act === 'fst') { TASKS.st = t.value; TASKS.shown = 60; renderTasks(); }
+        if (t.id === 'imp-file' && t.files && t.files[0]) actImport(t.files[0]);
+      });
+
+      document.addEventListener('input', function (e) {
+        var t = e.target, f = t.dataset.field;
+        if (!f) return;
+        if (f === 'goal') S.goal = t.value;
+        else if (f === 'deadline') S.deadline = t.value;
+        else if (f === 'limit') S.limit = Math.min(200, Math.max(1, parseInt(t.value, 10) || 14));
+        else if (f === 'answer') TRAIN.input = t.value;
+        else if (f === 'note' && t.dataset.pid) { S.mine[t.dataset.pid] = t.value; }
+        else if (f === 'search') {
+          TASKS.q = t.value.toLowerCase().trim(); TASKS.shown = 60;
+          renderTasks();
+          return;
+        }
+        save();
+      });
+
+      document.addEventListener('submit', function (e) {
+        if (e.target.id === 'quiz-form') { e.preventDefault(); actCheck(); }
+      });
+
+      /* Enter после верного ответа — «Дальше» */
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.target && e.target.closest && e.target.closest('#quiz-form')) return;
+        var nb = $('next-btn');
+        if (nb) { e.preventDefault(); nb.click(); }
+      });
+
+      $('theme-btn').addEventListener('click', function () {
+        S.theme = S.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(); save();
+      });
+
+      function applyTheme() {
+        if (S.theme === 'dark') document.documentElement.dataset.theme = 'dark';
+        else delete document.documentElement.dataset.theme;
+        $('theme-btn').textContent = S.theme === 'dark' ? '☀ Утро' : '☾ Вечер';
+      }
+
+      RENDER.train = renderTrain;
+      RENDER.plan = renderPlan;
+      RENDER.goal = renderGoal;
+      RENDER.tasks = renderTasks;
+
+      /* ==================== Старт ==================== */
+      applyTheme();
+      $('f-auto').textContent = N_AUTO;
+      $('f-total').textContent = N_TOTAL;
+      $('f-self').textContent = N_SELF;
+      renderHeader();
+      showTab(S.tab || 'train');
+    })();
+  </script>
+</body>
+</html>

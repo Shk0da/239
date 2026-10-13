@@ -1,0 +1,10 @@
+# Репозиторий собирается из git-bash: скрипты обязаны оставаться LF
+* text=auto eol=lf
+
+# Бинарники
+*.png binary
+*.jpg binary
+*.pdf binary
+*.keystore binary
+*.idsig binary
+*.apk binary
