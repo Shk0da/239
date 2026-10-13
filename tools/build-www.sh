@@ -30,11 +30,6 @@ if [ -d "$SITE/img" ]; then
     mkdir -p "$OUT/img"
     cp "$SITE/img/"*.png "$SITE/img/"*.jpg "$OUT/img/" 2>/dev/null || true
 fi
-# Исходное пособие Михлина (PDF): кнопка «Пособие (PDF)» в футере
-# отдаёт его из ассетов в Downloads (мост exportPdf в MainActivity)
-for f in "$SITE/"*.pdf; do
-    [ -f "$f" ] && cp "$f" "$OUT/mihlin.pdf" && break
-done
 
 # ---------- Контроль автономности ----------
 

@@ -286,15 +286,11 @@ public class MainActivity extends Activity {
         "    }\n" +
         "  }, true);\n" +
         "\n" +
+        "  /* Подвал сайта: техническая справка о проверке ответов и данных —\n" +
+        "     в приложении не нужна (сайт скрипты уже отработали, элементы\n" +
+        "     статичные, ре-рендера нет) */\n" +
         "  var f = document.querySelector('.app-f');\n" +
-        "  if (f && !document.getElementById('pdf-btn')) {\n" +
-        "    var b = document.createElement('button');\n" +
-        "    b.id = 'pdf-btn'; b.className = 'btn small';\n" +
-        "    b.style.marginTop = '10px';\n" +
-        "    b.textContent = 'Пособие Михлина (PDF, ~1 МБ)';\n" +
-        "    b.addEventListener('click', function(){ if (window.T239) window.T239.exportPdf(); });\n" +
-        "    f.appendChild(b);\n" +
-        "  }\n" +
+        "  if (f) f.remove();\n" +
         "\n" +
         "  /* ---------- Напоминания о занятиях ---------- */\n" +
         "  function pad2(x){ return (x < 10 ? '0' : '') + x; }\n" +
@@ -436,62 +432,6 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 toast("Не удалось сохранить файл: " + e.getMessage());
                 return false;
-            }
-        }
-
-        /**
-         * Кнопка «Пособие (PDF)» в футере: исходное пособие Михлина из
-         * ассетов (www/mihlin.pdf, кладёт tools/build-www.sh) — в Downloads
-         * (API 29+) или в каталог приложения (24–28), чтобы открыть любым
-         * PDF-просмотрщиком.
-         */
-        @JavascriptInterface
-        public boolean exportPdf() {
-            try {
-                byte[] bytes = readAsset("www/mihlin.pdf");
-                if (bytes == null || bytes.length == 0) {
-                    toast("Файл пособия не найден в сборке");
-                    return false;
-                }
-                String name = "mihlin-239-posobie.pdf";
-                if (Build.VERSION.SDK_INT >= 29) {
-                    ContentValues cv = new ContentValues();
-                    cv.put(MediaStore.Downloads.DISPLAY_NAME, name);
-                    cv.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
-                    Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
-                    if (uri == null) return false;
-                    try (OutputStream os = getContentResolver().openOutputStream(uri)) {
-                        if (os == null) return false;
-                        os.write(bytes);
-                    }
-                    toast("Сохранено в Downloads/" + name);
-                } else {
-                    File dir = getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
-                    if (dir == null) dir = getFilesDir();
-                    //noinspection ResultOfMethodCallIgnored
-                    dir.mkdirs();
-                    File file = new File(dir, name);
-                    try (FileOutputStream fo = new FileOutputStream(file)) {
-                        fo.write(bytes);
-                    }
-                    toast("Сохранено: " + file.getAbsolutePath());
-                }
-                return true;
-            } catch (Exception e) {
-                toast("Не удалось сохранить пособие: " + e.getMessage());
-                return false;
-            }
-        }
-
-        private byte[] readAsset(String path) {
-            try (java.io.InputStream is = getAssets().open(path)) {
-                java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
-                byte[] buf = new byte[65536];
-                int n;
-                while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
-                return bo.toByteArray();
-            } catch (java.io.IOException e) {
-                return null;
             }
         }
 
