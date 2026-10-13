@@ -278,15 +278,22 @@ public class MainActivity extends Activity {
         "\n" +
         "  /* Мобильная ширина: строки плана (дата + счётчик + статус + кнопка)\n" +
         "     не влезают в экран — кнопка «тренировать» уходит за край.\n" +
-        "     Разрешаем перенос: кнопка встаёт второй строкой и прижимается\n" +
-        "     вправо (margin-left:auto; брейкпоинт 620px — как у сайта). */\n" +
+        "     Разрешаем перенос до 780px (max-width .quiz-shell, где живут\n" +
+        "     «Ближайшие занятия») — покрывает и планшеты/ландшафт с крупным\n" +
+        "     шрифтом. Кнопка встаёт второй строкой в правый нижний угол.\n" +
+        "     Кнопка «заниматься» в «Ближайших занятиях» оформляется как\n" +
+        "     «тренировать» в «Плане занятий» (primary, из CSS сайта). */\n" +
         "  if (!document.getElementById('t239-style')) {\n" +
         "    var st = document.createElement('style');\n" +
         "    st.id = 't239-style';\n" +
-        "    st.textContent = '@media (max-width: 620px) {' +\n" +
+        "    st.textContent = '@media (max-width: 780px) {' +\n" +
         "        '.plan-row { flex-wrap: wrap; row-gap: 6px; }' +\n" +
         "        '.plan-date { min-width: 0; }' +\n" +
-        "        '.plan-row > .btn { margin-left: auto; }' +\n" +
+        "        '.plan-row > .btn { margin-left: auto; align-self: flex-end; }' +\n" +
+        "      '}' +\n" +
+        "      '.sess-list .plan-row > .btn {' +\n" +
+        "        'background: var(--accent); border-color: var(--accent);' +\n" +
+        "        'color: #fdfcf8; font-weight: 600;' +\n" +
         "      '}';\n" +
         "    document.head.appendChild(st);\n" +
         "  }\n" +
