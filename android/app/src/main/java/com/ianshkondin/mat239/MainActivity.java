@@ -276,26 +276,69 @@ public class MainActivity extends Activity {
         "    };\n" +
         "  }\n" +
         "\n" +
-        "  /* Мобильная ширина: строки плана (дата + счётчик + статус + кнопка)\n" +
-        "     не влезают в экран — кнопка «тренировать» уходит за край.\n" +
-        "     Разрешаем перенос до 780px (max-width .quiz-shell, где живут\n" +
-        "     «Ближайшие занятия») — покрывает и планшеты/ландшафт с крупным\n" +
-        "     шрифтом. Кнопка встаёт второй строкой в правый нижний угол.\n" +
-        "     Кнопка «заниматься» в «Ближайших занятиях» оформляется как\n" +
-        "     «тренировать» в «Плане занятий» (primary, из CSS сайта). */\n" +
+        "  /* Карточки занятий.\n" +
+        "     «План занятий»: строки (дата + трек + счётчик + статус + кнопка)\n" +
+        "     не влезают в телефон — перенос до 780px (max-width .quiz-shell,\n" +
+        "     покрывает планшет/ландшафт и крупный системный шрифт), кнопка\n" +
+        "     второй строкой в правый нижний угол.\n" +
+        "     «Ближайшие занятия» (в тренажёре): карточка-сетка — дата и\n" +
+        "     мета-строка (счётчик + статус) слева, кнопка «заниматься»\n" +
+        "     (primary, как «тренировать» в плане) справа по центру.\n" +
+        "     DOM строк слегка перестраивается: свободные SPAN'ы (счётчик,\n" +
+        "     статус) собираются в один .t239-meta. */\n" +
         "  if (!document.getElementById('t239-style')) {\n" +
         "    var st = document.createElement('style');\n" +
         "    st.id = 't239-style';\n" +
-        "    st.textContent = '@media (max-width: 780px) {' +\n" +
+        "    st.textContent =\n" +
+        "      '@media (max-width: 780px) {' +\n" +
         "        '.plan-row { flex-wrap: wrap; row-gap: 6px; }' +\n" +
         "        '.plan-date { min-width: 0; }' +\n" +
         "        '.plan-row > .btn { margin-left: auto; align-self: flex-end; }' +\n" +
         "      '}' +\n" +
+        "      /* карточка «Ближайшие занятия»: сетка вместо флекс-строки */\n" +
+        "      '.sess-list .plan-row {' +\n" +
+        "        'display: grid;' +\n" +
+        "        'grid-template-columns: minmax(0, 1fr) auto;' +\n" +
+        "        'grid-template-areas: \"date btn\" \"meta btn\";' +\n" +
+        "        'align-items: center; column-gap: 12px; row-gap: 4px;' +\n" +
+        "      '}' +\n" +
+        "      '.sess-list .plan-date { grid-area: date; min-width: 0; }' +\n" +
         "      '.sess-list .plan-row > .btn {' +\n" +
+        "        'grid-area: btn; align-self: center; justify-self: end;' +\n" +
+        "        'margin-left: 0;' +\n" +
         "        'background: var(--accent); border-color: var(--accent);' +\n" +
         "        'color: #fdfcf8; font-weight: 600;' +\n" +
-        "      '}';\n" +
+        "      '}' +\n" +
+        "      '.t239-meta {' +\n" +
+        "        'grid-area: meta; display: flex; align-items: center;' +\n" +
+        "        'gap: 10px; min-width: 0; color: var(--muted); font-size: 13px;' +\n" +
+        "      '}' +\n" +
+        "      '.t239-meta .grow { display: none; }';\n" +
         "    document.head.appendChild(st);\n" +
+        "  }\n" +
+        "  function polishSessRows(){\n" +
+        "    var rows = document.querySelectorAll('.sess-list .plan-row');\n" +
+        "    for (var i = 0; i < rows.length; i++) {\n" +
+        "      var r = rows[i];\n" +
+        "      if (r.getAttribute('data-t239')) continue;\n" +
+        "      r.setAttribute('data-t239', '1');\n" +
+        "      var spans = [];\n" +
+        "      for (var j = 0; j < r.children.length; j++) {\n" +
+        "        if (r.children[j].tagName === 'SPAN') spans.push(r.children[j]);\n" +
+        "      }\n" +
+        "      if (!spans.length) continue;\n" +
+        "      var meta = document.createElement('div');\n" +
+        "      meta.className = 't239-meta';\n" +
+        "      for (var k = 0; k < spans.length; k++) meta.appendChild(spans[k]);\n" +
+        "      r.appendChild(meta);\n" +
+        "    }\n" +
+        "  }\n" +
+        "  /* Сайт перерисовывает вкладку тренажёра — карточки собираем заново */\n" +
+        "  var trainPane = document.getElementById('pane-train');\n" +
+        "  if (trainPane) {\n" +
+        "    new MutationObserver(function(){ setTimeout(polishSessRows, 0); })\n" +
+        "        .observe(trainPane, { childList: true, subtree: true });\n" +
+        "    polishSessRows();\n" +
         "  }\n" +
         "\n" +
         "  function reportTheme(){\n" +
